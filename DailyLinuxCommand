@@ -1,3 +1,6 @@
 1.ip	取代ifconfig的命令,功能比ifconfig更加全面
-2.curl	与wget相比加入了多线程的支持，更加快
+2.curl	
 3.lspci	可以列出所有的模块
+4.netstat	被ss取代
+5.ss
+6.nethogs
