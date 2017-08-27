@@ -6,4 +6,5 @@
 6.nethogs
 7.screen
 8.syslog logger
-
+9.tee
+10.file
