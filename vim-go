@@ -92,4 +92,45 @@
 
 文件之间的跳转:   :GoAlternate  自动在源文件和对应测试文件间跳转
                   :GoDef 跳转到元素定义的地方
-    
+                  ctrl+o 跳转到上一个鼠标所在位置 
+                  :GoDefPop跳转到上一个跳转处
+                  :GoDefStack
+                  :GoDefStackClear
+
+
+函数间移动:     .vimrc Plug 'ctrlpvim/ctrlp.vim'   使用:PlugInstall安装
+                :GoDecls 显示所有的类型和函数，可以使用参数进行筛选
+                :GoDeclsDir  let g:go_decls_includes = "func,type"
+                ]]移动到下一个函数
+                [[移动到上一个函数
+
+查看文档:      :GoDoc  显示光标下面标识符的注释
+               :GoInfo  查看光标下标识符信息  let g:go_auto_type_info = 1  自动显示
+               
+标识符高亮显示:    :GoSameIds  所有符合标识符高亮显示 let g:go_auto_sameids = 1 自动显示
+                   :GoSameIdsClear
+
+依赖和组成文件:    :GoFiles  查看组成一个包的文件，测试文件不包括
+                   :GoDeps   查看依赖文件
+
+
+guru             :GoReferrers         
+                 :GoDescribe
+                 :GoImplements 查看实现的接口
+                 :GoWhicherrs  错误类型
+                 :GoChannelPeers  
+                 :GoCallees
+                 :GoCallers
+                 :GoCallstack
+                 :GoGuruScope  可以使用-排除一个选项  let g:go_guru_scope = ["github.com/fatih/vim-go-tutorial"]  
+                 
+
+重命名:    :GoRename
+
+拆分函数:   :GoFreevars  
+
+实现接口:    :GoImpl 后面输入需要实现的接口也可以加入需要实现接口的变量以及类型
+
+
+
+  
