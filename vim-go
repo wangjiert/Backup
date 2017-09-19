@@ -1,0 +1,95 @@
+安装   :    curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+            git clone https://github.com/fatih/vim-go.git ~/.vim/plugged/vim-go
+
+.vimrc   :  call plug#begin()
+            Plug 'fatih/vim-go', { 'do': ':GoInstallBinaries' }
+            call plug#end()
+
+手动安装 :  :GoInstallBinaries
+            :GoUpdateBinaries
+
+运行     :    :GoRun
+
+编译     :    :GoBuild
+
+在quickfix跳转  :   :cnext
+                    :cprevious
+
+自动保存 :     .vimrc中加 set autowrite
+
+测试     :     :GoTest    不需要在测试文件中运行
+               :GoTest 10s之后会超时，通过 let g:go_test_timeout = '10s' 改变默认值
+               :GoTestFunc 只会测试光标下的函数
+               :GoTestCompile 编译测试文件
+
+显示测试覆盖范围  :    :GoCoverage   覆盖的路径时绿色的,未覆盖用红色
+                       :GoCoverageClear 清除语法高亮显示
+                       :GoCoverageToggle  综合上面两个
+                       :GoCoverageBrowser 在浏览器打开
+
+格式化文件:            :GoFmt
+
+
+                      
+导入包:                :GoImport  导入指定的包 支持tab补全
+                       :GoImportAs
+                       :GoDrop 删除指定包
+                       :GoImports  let g:go_fmt_command = "goimports"    替换gofmt
+
+新增文本对象:          if af 跟函数有关
+
+结构体换行显示与整行显示:   ~vimrc   call plug#begin()
+                                     Plug 'fatih/vim-go'
+                                     Plug 'AndrewRadev/splitjoin.vim'
+                                     call plug#end()
+                            通过命令:PlugInstall安装
+                            通过gS gJ 进行split和join操作
+
+使用代码片段:              ~/.vimrc 
+                                    call plug#begin()
+                                    Plug 'fatih/vim-go'
+                                    Plug 'SirVer/ultisnips'
+                                    call plug#end()
+
+
+                           通过:PlugInstall安装
+                           在插入模式下输入errp然后按tab键会自动插入panic相关代码
+                           在插入模式下输入ff\fn\ln\lf然后按tab补全打印
+                              fn -> fmt.Println()
+                              ff -> fmt.Printf()
+                              ln -> log.Println()
+                              lf -> log.Printf() 
+                           在插入模式下，在属性的最后面输入json然后按tab键增加json tag
+                           通过 let g:go_addtags_transform = "camelcase"指定生成形式 默认是 snake_case 
+
+高亮显示:            在.vimrc中加 let g:go_highlight_types = 1
+                                  let g:go_highlight_functions = 1
+                                  let g:go_highlight_methods = 1
+                                  let g:go_highlight_operators = 1
+                                  let g:go_highlight_extra_types = 1
+                                  let g:go_highlight_build_constraints = 1
+
+设置缩进:   autocmd BufNewFile,BufRead *.go setlocal noexpandtab tabstop=4 shiftwidth=4 
+
+
+使用颜色主题:  
+                   call plug#begin()
+                   Plug 'fatih/vim-go'
+                   Plug 'fatih/molokai'
+                   call plug#end()
+                   let g:rehash256 = 1
+                   let g:molokai_original = 1
+                   colorscheme molokai
+                   使用:PlugInstall安装
+
+
+检查文件:        :GoLint  显示对代码修改的建议
+                 :GoVet
+                 :GoMetaLinter  默认自动运行go vet\golint\errcheck通过let g:go_metalinter_enabled = ['vet', 'golint', 'errcheck']修改
+                         会收集结果并格式化显示
+                         通过设置let g:go_metalinter_autosave = 1 每次保存时会自动执行 let g:go_metalinter_autosave_enabled = ['vet', 'golint']指示那些在自动保存时执行
+                         let g:go_metalinter_deadline = "5s" 设置超时时间
+
+文件之间的跳转:   :GoAlternate  自动在源文件和对应测试文件间跳转
+                  :GoDef 跳转到元素定义的地方
+    
