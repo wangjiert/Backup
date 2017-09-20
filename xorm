@@ -1,0 +1,65 @@
+引擎:   一个Engine一般只对应一个数据库 通过xorm.NewEngine生成
+        Engine是Goroutine安全的
+        创建完Engine之后并没有立即连接数据库，可以通过engine.Ping()测试是否可以连接，对于有连接超时的数据库可以通过一个定期的Ping()来保持连接
+		对于有大量数据并且需要分区的应用，可以根据规则创建多个Engine
+		Engine可以通过engine.Close()手动关闭，程序退出时会自动关闭
+
+日志: 	日志是一个接口，通过设置日志可以显示SQL，警告以及错误，默认显示级别为INFO
+ 		engine.ShowSQL(true) 在控制台打印SQL语句
+		engine.Logger().SetLevel(core.LOG_DEBUG) 改变显示级别
+ 		提供NewSimpleLogger(w io.Writer)创建Logger
+    	engine.setLogger()可以设置Logger
+
+连接池: engine内部支持
+     	engine.SetMaxIdleConns()设置连接池的空闲数
+		engine.SetMaxOpenConns()设置最大打开连接数
+
+名称映射规则:  负责结构体名到表名，结构体field到表字段的名称映射，由core.IMapper接口的实现者管理
+				内置三种IMapper实现: core.SnakeMapper(默认) core.SameMapper core.GonicMapper(与Snake类似，某些特定词支持更好)       
+				engine.SetMapper()设置Mapper
+				可以单独设置表名和列名映射规则 engine.SetTableMapper()  engine.SetColumnMapper()
+
+前缀映射\后缀映射\缓存映射 core.NewPrefixMapper(core.SnakeMapper{},"prefix")可以在一个Mapper的基础上添加同一前缀
+						   core.NewSufffixMapper(coew.SnakeMapper{},"suffix")
+						   core.NewCacheMapper(core.SnakeMapper{}) 创建一个组合了其他的映射规则，起到在内存中缓冲曾经映射过的命名映射
+
+使用Table和Tag改变名称映射:  如果结构体拥有TableName() string的成员方法，那么返回值就是结构体对应的数据库表名
+							 通过engine.Table()可以改变struct对应的数据库表的名称
+							 通过struct中field对应的Tag xorm:"'column_name'" 指定对应列名，使用两个单引号将名称括起来是为了防止名称冲突，因为Tag中可以有更多的定义，如果名称不冲突可以不用单引号
+							 表名的优先级顺序 :  engine.Table()
+												 TableName() string
+												 Mapper自动映射
+                             字段名的优先级顺序: 结构体tag指定
+												 Mapper自动映射
+
+数据表列属性定义:   tag中关键字不区分大小写
+					xorm会自动把名称为Id，类型为int64并且没有定义tag的field视为主键，并拥有自增属性
+					如果一个结构体包含一个Conversion的接口类型，那么在获取数据时，必须要预先设置一个实现此接口的struct或者struct的指针。此时可以在此struct中实现BeforeSet(name string, cell xorm.Cell)方法来进行预先给Conversion赋值
+
+获取数据库信息:   调用engine.DBMetas()可以获取到数据库中所有的表，字段，索引的信息
+				  TableInfo() 根据传入的结构体指针及其对应的Tag，提取出模型对应的表结构信息，这里不是数据库当前的表结构信息，而是我们通过struct建模时希望数据库的表的结构信息
+
+表操作:   创建表使用engine.CreateTables()，参数为一个或多个空的对应Struct的指针,同时可用的方法有Charset()和StoreEngine(),在创建表时指定表的字符编码和使用的引擎
+		  IsTableEmpty() 判断表是否为空，参数和CreateTables相同
+		  IsTableExist() 判断表是否存在 
+	 	  DropTables() 删除表使用engine.DropTables()，参数为一个或多个空的对应Struct的指针或者表的名字,如果为string传入，则只删除对应的表，如果传入的为Struct，则删除表的同时还会删除对应的索引
+
+创建索引:   CreateIndexes 根据struct中的tag来创建索引
+			CreateUniques 根据struct中的tag来创建唯一索引
+
+同步数据库结构: 同步能够部分智能的根据结构体的变动检测表结构的变动，并自动同步,目前有两个实现
+				Sync:	自动检测和创建表，这个检测是根据表的名字，自动检测和新增表中的字段，这个检测是根据字段名，自动检测和创建索引和唯一索引，这个检测是根据索引的一个或多个字段名，而不根据索引名称
+						调用方法:  err := engine.Sync(new(User), new(Group))
+
+				Sync2: 	自动检测和创建表，这个检测是根据表的名字,自动检测和新增表中的字段，这个检测是根据字段名，同时对表中多余的字段给出警告信息,
+						自动检测，创建和删除索引和唯一索引，这个检测是根据索引的一个或多个字段名，而不根据索引名称。因此这里需要注意，如果在一个有大量数据的表中引入新的索引，数据库可能需要一定的时间来建立索引。
+						自动转换varchar字段类型到text字段类型，自动警告其它字段类型在模型和数据库之间不一致的情况。
+						自动警告字段的默认值，是否为空信息在模型和数据库之间不匹配的情况
+						以上这些警告信息需要将`engine.ShowWarn` 设置为 `true` 才会显示
+						调用方法:  	err := engine.Sync2(new(User), new(Group))
+
+
+导入导出SQL脚本:	如果需要在程序中Dump数据库的结构和数据可以调用engine.DumpAll(w io.Writer) 和 engine.DumpAllFile(fpath string)  这个方法导出的SQL语句并不能通用。只针对当前engine所对应的数据库支持的SQL
+					如果你需要将保存在文件或者其它存储设施中的SQL脚本执行，那么可以调用engine.Import(r io.Reader) 和 engine.ImportFile(fpath string)
+
+
