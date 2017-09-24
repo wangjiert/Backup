@@ -62,4 +62,4 @@
 导入导出SQL脚本:	如果需要在程序中Dump数据库的结构和数据可以调用engine.DumpAll(w io.Writer) 和 engine.DumpAllFile(fpath string)  这个方法导出的SQL语句并不能通用。只针对当前engine所对应的数据库支持的SQL
 					如果你需要将保存在文件或者其它存储设施中的SQL脚本执行，那么可以调用engine.Import(r io.Reader) 和 engine.ImportFile(fpath string)
 
-
+插入数据: engine.Insert()参数可以是一个或多个Struct指针，一个或多个Struct的Slice的指针
