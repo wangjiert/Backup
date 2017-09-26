@@ -1,0 +1,33 @@
+功能:	通过配置文件引入配置
+		通过条件路由事件到另一个配置
+		使用远程配置文件
+		命名配置文件中的处理器
+
+特点:	每一个管道都是单独运行，停止启动它们不会影响其他的
+
+配置文件结构:	配置文件中每一种类型的处理器都有一个单独的块，每一个块中都有对于一个或多个处理器的配置选项
+				如果指定了多个过滤器，它们以在配置文件中出现的顺序被应用
+				一个处理器的配置组成是:处理器名字，后面是处理器配置块
+
+特殊处理器:	用来扩展管道配置
+			use:	从另一个文件中导入配置
+			route:	路由或者复制事件到另外的配置文件
+
+命名处理器:	在处理器类型和配置块的中间加上名字，在debug和使用api的时候很有用
+
+值类型:	一个处理器可以要求某一个设置的值是具体的类型
+		Array Bool Hash Int String Codec Path Location Interval
+
+使用模板:	TS DataFormat Time Now NumFmt SafeHTML HTMLUnescape HTMLEscape Lower Upper Trim TrimPrefix Int Markdown Ago 
+
+条件表达式:	if，else if,esle语句，并且可以嵌套
+			表达式: Comparison tests, boolean logic
+			比较操作:	equality: ==, !=, <, >, <=, >=
+						regexp: =~, !~ (checks a pattern on the right against a string value on the left)
+						inclusion: in, not in
+			boolean操作:	and or
+			一元操作:	!
+
+input处理器:	
+	beats event exec file 
+					
