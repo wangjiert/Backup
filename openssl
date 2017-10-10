@@ -1,0 +1,1 @@
+获取服务器证书  openssl s_client -connect -showcerts host:port   保存为.cer格式
