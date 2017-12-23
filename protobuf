@@ -1,0 +1,11 @@
+1.消息的每一个field都有一个唯一的数字标识的tag,tag是用来在消息的二进制模式中标识field,如果tag值在0到15之间，需要用一个字节编码这个tag(一个字节中既包含tag值也包含field的类型,除四字节外,其他字节的最高位用来表示是否需要下一个字节),如果tag值在16到2047之间,需要2个字节,因此应该保留tag值1到15以备经常使用的消息field
+2.tag值的最小值是1,最大值是2e29-1(tag类型占三位),19000到19999(FieldDescriptor::kFirstReservedNumber through FieldDescriptor::kLastReservedNumber)不能作为tag值,这些值是保留给Protocol Buffers实现用的
+3.field的规则,一个field的规则可能是:
+	required:一个消息必须有且仅有一个这个field
+	optional:一个消息至多有一个这个field
+	repeated:这个field可以重复任意次,重复值的顺序会被保留
+4.由于历史原因类型为scalar numeric的repeated field编码消息很低,可以通过指定选项[packed=true]来提升效率;repeated int32 samples = 4 [packed=true];
+5.多个消息类型可以定义在一个.proto文件中
+6.注释风格和c++一样
+7.通过注释或则删除一个field来更新消息，可能会导致使用旧.proto文件生成的代码运行失败,为了防止这种错误,可以指定删除的field的tag为reserved(也可以通过指定field的名字,但是使用json序列化时仍可能出错)
+

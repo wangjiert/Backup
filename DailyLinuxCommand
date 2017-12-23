@@ -8,3 +8,11 @@
 8.syslog logger
 9.tee
 10.file
+11.nc
+12.lsblk
+13.lsppci
+14.more
+15.less
+16.tail
+17.id
+18.wc
