@@ -8,4 +8,74 @@
 5.多个消息类型可以定义在一个.proto文件中
 6.注释风格和c++一样
 7.通过注释或则删除一个field来更新消息，可能会导致使用旧.proto文件生成的代码运行失败,为了防止这种错误,可以指定删除的field的tag为reserved(也可以通过指定field的名字,但是使用json序列化时仍可能出错)
-
+8.Scalar Value Type包括:double,float,int32,int64,uint32,uint64,sint32,sint64,fixed32,fixed64,sfixed32,sfixed64,bool,string,bytes
+9.当消息被解析时,如果不包含optional field，那么这个field会被设置为默认值,默认值的设置形式为 optional int32 result_per_page = 3 [default = 10];如果没有单独指定默认值那么会使用对应类型的默认值
+10.当消息的值是有限的几个时,可以定义枚举类型,通过把相同的值赋给enum常量可以定义别名,前提是定义枚举类时指定allow_alias选项为true(option allow_alias = true;),否则编译器会报错.枚举类型的常量值必须在32位的整数范围内,不推荐使用负值,如果枚举类定义在一个消息类型内部,通过MessageType.EnumType形式来使用.通过注释或者删除一个枚举类的field,在复用tag值时,可能会出错,可以通过申明对应tag或者field名字为reserved来避免:
+	enum Foo {
+  		reserved 2, 15, 9 to 11, 40 to max;
+  		reserved "FOO", "BAR";
+	}
+11.可以使用其他消息类型作为消息field的类型,如果使用的消息类型定义在其他.proto文件中,可以使用import "myproject/other_protos.proto";导入.如果一个.proto文件需要移动,可以在原来的位置放置一个仿制的文件,文件内容是import public "new.proto";import public会进行嵌套的依赖
+12.在编译的时候,编译器会查询-I/--proto_path指定的路径来查询import文件.如果没有指定这个flag,则会在编译器执行的当前路径查找
+13.groups是另外一种在定义消息时嵌套使用其他消息的形式:
+	message SearchResponse {
+  		repeated group Result = 1 {
+    		required string url = 2;
+    		optional string title = 3;
+    		repeated string snippets = 4;
+  		}
+	}
+14.更新消息类型时的注意事项:
+	a.不能改变已经存在的field的tag值
+	b.新增的field应该是optional或者repeated的;旧版本的代码会直接忽略新增的field,然而这些数据并没有被丢弃,如果这个消息之后又被序列化,这些不识别的field会一起被序列化,
+	c.不再需要的field可以直接被删除,只要在对应的tag值不被重新使用,可以通过在field之前加OBSOLETE_前缀或者标记tag值为reserved可以避免被重复使用
+	d.一个不再需要的field可以转换为extension,反过来也行,只要他们的类型和tag不变
+	e.int32, uint32, int64, uint64, and bool是相互兼容的
+	f.sint32和sint64是相互兼容的,但是和其他整形不兼容
+	g.只要bytes是合法的utf-8,string和bytes就是兼容的
+	h.嵌套的消息类型和bytes是兼容的
+	i.fixed32(sfixed32)和sfixed(sfixed64)相互兼容
+	j.optional和repeated相互兼容.如果是基本类型,optional只会获取repeated最后一个值,如果是其他消息类型,就会合并所有的输入
+	k.可以改变默认值,因为默认值是不会进行传输的
+	l.enum和int32, uint32, int64, and uint64兼容,如果大小不合适值会被截断,在反序列化时,enum和整数会被区别对待,不能识别的enum值会被丢弃,调用field的has方法时会返回false,值被设为默认值,如果field是repeated类型,不能识别的值会从列表中移除,不能识别的enum值和其他不能识别的field保存在一起,再次传输该信息时,当field类型是repeated时,旧值显示在识别的值和新增的值后面
+15.extensions声明了一个区间的tag值作为第三方扩展,一个extension就是一个不在最初的文件中定义的field的占位符,通过extension,其他.proto文件可以向原来的消息定义中增加预留的tag对应的field类型:
+	extend Foo {
+  		optional int32 bar = 126;
+	}
+16.extension的类型可以是任意的field类型,包括自定义消息类型,但不能是oneofs和maps
+17.extension可以定义在其他类型里面
+18.如果一个消息有许多optional字段,同一时间最多只有一个field有值,可以通过使用Oneof来节约内存.Oneof filed和optional类似,但是所有的Oneof field共享内存.当设置一个Oneof的字段时会自动的清除其他的Oneof field.可以通过指定的方法case() or WhichOneof()来测试哪一个field被设置
+19.使用oneof关键字后接oneof的名字来定义oneof,然后向这个定义中添加oneof的field,field不能是required,optional,repeated.
+20.map使用语法: map<key_type, value_type> map_field = N; key_type可以是整数或则string(不包括float和bytes,enum).value_type可以是除了map的所有类型
+21.maps不能是repeated,optional,required
+22.通过在.proto文件中加入package修饰符能够避免消息类型名字的冲突
+23.如果需要使用rpc,可以在.proto文件中定义一个rpc的服务接口,编译器能够用相应语言生成一个服务接口代码和stub.形式如下:
+	service SearchService {
+  		rpc Search (SearchRequest) returns (SearchResponse);
+	}
+	这个例子中,编译器通常会生成一个抽象的接口ServiceSearch和相应的stub实现.stub能够把所有的调用重定向到RpcChannel,RpcChannel是一个抽象接口
+24.消息类型使用驼峰式,field使用下划线;枚举类的对象应该使用全大写模式并用下划线分割;服务的名字和rpc方法的名字都应该使用驼峰式
+25.变长就是使用一个或多个字节序列化整数的方法.数字越小使用的字节越小.在变长方式中,除了最后一个字节外,每一个字节都有一个关键位,用来指示是否需要其他的字节.每一个字节的低七位用来存储七位组中数字的补码.最低有效组第一.
+26.一个消息是由一系列的键值对组成,使用field的tag值作为key,field的名字和类型只有在反序列化时通过消息定义才知道,在解码时解析能够跳过不识别的field
+27.一个field的key包含两个值,field的tag值以及一个wire type,通过这个类型可以知道field的值的长度
+28.wire type包括:
+	  Type Meaning     			Used For	
+	a.0    Variant 	   			int32, int64, uint32, uint64, sint32, sint64, bool, enum
+	b.1	   64-bit	   			fixed64, sfixed64, double
+	c.2	   Length-delimited		string, bytes, embedded messages, packed repeated fields
+	d.3	   Start group			groups (deprecated)
+	e.4	   End group			groups (deprecated)
+	f.5	   32-bit				fixed32, sfixed32, float
+29.每一个消息的key为(field_number << 3) | wire_type
+30.Signed Integer表示方法为:ZigZag,既映射signed integer到unsigned integer
+	(n << 1) ^ (n >> 31) for sint32
+	(n << 1) ^ (n >> 63) for sint64
+31.non-varint变量会取固定长度的值,值使用小端存储的
+32.strings表示为key的值后面会有一个变长值来表示接下来多长的字节是用来表示这个字符串的
+33.嵌入式消息格式:和字符串类似
+34.当一个repeated field没有指定option [packed=true]时,编码的消息中会有0个或则多个拥有相同tag值的键值对,他们之间的相对顺序可以得到保证,但是和其他field之间的相对顺序无法保证.
+35.non-repeated field也可以有多个值,对于numerical和strings,如果相同tag值出现多次,解析器会使用最后一次出现的值,对于嵌入式消息,编译器会合并消息,就好像使用Message::MergeFrom方法一样,效果是,后者中所有的singular scalar fields会取代前面的, singular embedded的消息会合并,repeated fields会串联
+36.当repeated field指定option [packed=true]时,如果对应field没有出现,这个键值对就不会被编码,如果出现多次,那么多有的信息都会存储在一个键值对中,wire type是2,只有primitive numeric types的repeated field才可以声明为packed,
+37.filed的顺序会以tag的顺序来进行序列化,但是编译器必须保证能够以任何顺序来解析field
+38.如果遇到不识别的field,编码时会以任意的顺序将这些field写到以tag顺序排列号的可识别的filed之后.
+39..proto文件可以使用protocol buffers来进行编码,src/google/protobuf/descriptor.proto定义了与之相关的类型,通过使用--descriptor_set_out option,protoc能够输出一个FileDescriptorSet,FileDescriptorSet代表一系列的.proto文件,通过使用DynamicMessage类可以写出自己的工具来产生SelfDescribingMessage
