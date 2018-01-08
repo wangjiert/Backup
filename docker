@@ -5,7 +5,7 @@
 	sudo gpasswd -a <user> docker	添加用户到docker组
 	docker	显示帮助信息
 	docker ps	列出所有运行中的容器,-a选项可以查看停止的容器
-	docker run 镜像名 shell命令 启动容器并在容器中执行shell
+	docker run 镜像名 shell命令 启动容器并在容器中执行shell,使用--name指定docker容器名字,-h指定计算机名
 	docker rm 容器id	永久删除容器
 	docker images	输出镜像信息
 	docker rmi 镜像名	删除镜像
@@ -45,4 +45,55 @@
 	通过docker rm -v 容器名 命令来删除容器和它的卷
 14.对容器进行数据复制
 	使用docker cp命令将文件从正在运行的容器复制到docker主机,反之亦然
+15.创建镜像
+	a.使用docker commit命令,这个操作的背后,docker会使用联合文件系统创建一个镜像层,来保存基础镜像和新创建镜像之间的差异,通过简单的将这个镜像导出为tar文件来共享镜像
+	b.使用Dockerfile
+16.docker commit
+	在删除容器之前可以通过提交对容器做出的修改,并以此创建新的镜像,可以指定tag名来进行区分
+	通过docker diff命令可以查看在容器中对镜像作出的修改
+	对于已有的镜像可以使用docker save和load来创建一个压缩包,对于容器可以使用import和export进行导入导出操作
+17.save与export区别
+	保存一个镜像会保留它的历史,导出容器会对它的历史进行压缩
+18.Dockerfile
+	FROM指定新的镜像以哪个镜像为基础开始构建
+	ENTRYPOINT设置从该镜像创建的容器启动时需要执行的命令
+	使用docker build . 创建镜像,通过参数-t可以设置仓库名和标签名
+	CMD和ENTRYPOINT一样,但是启动容器时,通过docker run命令后面指定新的cmd参数来覆盖Dockerfile中设置的内容,而ENTRYPOINT只能通过docker run的--entrypoint参数来覆盖
+	EXPOSE将应用监听的端口暴露给外部
+	ADD将应用程序复制到容器内的文件系统上
+	COPY复制文件
+	RUN安装运行需要的软件
+	使用.dockerignore文件可以排除文件,镜像构建过程中,Docker会将Dockerfile所在文件夹下的内容复制到构建环境中
+19.docker run的-P与-p
+	-P告诉docker在宿主机上选择一个端口并映射到在dockerfile中设置的端口,需要Dockerfile中指定EXPORSE
+	-p手动指定映射端口
+20.Dockerfile中每一个命令的执行会增加镜像层数
+21.ADD和COPY区别
+	ADD可以指定url,还会自动解压缩
+22.通过标签对镜像进行版本管理
+	通过docker tag命令为镜像打标签,可以对已有镜像进行重命名,或则为同一个镜像创建新的标签
+	标签名是可选的,如果没有指定,默认使用latest作为标签
+23.Docker hub
+	a.通过docker login命令来登录Docker Hub,凭证会保留在~/.dockercfg中
+	b.通过docker tag打标签
+	c.docker push推送
+24.使用ONBUILD镜像
+	包含ONBUILD指令的镜像称为父镜像,当一个父镜像被FROM指令引用时,新镜像构建过程中会触发在父镜像ONBUILD中定义的指令,ONBUILD指令的内容会优先于子镜像中定义的命令
+	FROM指令中需要有后缀-onbuild
+25.镜像自动构建
+26.查看docker容器ip
+	docker inspect --format '{{ .NetworkSettings.IPAddress }}' dockerName
+27.只有在宿主机中才能够通过docker容器ip加容器服务端口来访问容器的服务
+28.通过docker port能够查看端口映射信息
+29.一个容器可以同时暴露多个端口,并选择TCP\UDP协议
+30.默认情况下,Docker会修改宿主机的iptables规则,其次Docker会在宿主机上启动一个轻量级的代理程序,这个进程监听宿主机的所有网络接口,监听端口是为容器动态分配的端口,
+31.容器链接
+	通过docker run的--link <container_name>:<alias>选项实现.
+	在容器环境变量中会添加一些特定的变量,/etc/hosts文件也会自动更新,该文件包含了最新的名称解析相关信息
+	如果重启了一个容器,那么链接了这个容器的/etc/hosts文件会自动更新,而其环境变量保持不变,因此推荐使用/etc/hosts文件对所链接的容器进行IP地址解析
+	通过 docker inspect "{{ .HostConfig.Links }}" docker_name查看链接信息
+32.理解docker容器网络
+	默认情况下,docker会在宿主机上创建一个名为docker0的Linux网桥设备,该网桥设备拥有一个私有网络地址及其所属子网
+	所有容器都会连接到该网桥设备上,并从中分配一个位于子网中的IP地址,容器连接到网桥的网络接口会把docker0网络设备作为网关
+	创建新容器时,Docker会创建一对网络设备接口,并将他们放到两个独立的网络命名空间,一个网络设备放到容器的网络命名空间(eth0),一个网络设备放到宿主机的网络命名空间,并连接到docker0网桥设备上
 
