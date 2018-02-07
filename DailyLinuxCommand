@@ -16,3 +16,9 @@
 16.tail
 17.id
 18.wc
+19.dmesg
+20.journalctl
+21.fbterm
+22.awk
+23.sed
+24.cat /proc/net/dev
