@@ -1,5 +1,5 @@
 1.ip	取代ifconfig的命令,功能比ifconfig更加全面
-2.curl	
+2.curl aria2c wget	
 3.lspci	可以列出所有的模块
 4.netstat	被ss取代
 5.ss
@@ -22,3 +22,6 @@
 22.awk
 23.sed
 24.cat /proc/net/dev
+25.trans 翻译
+26.free top vmstat
+27.time 查看命令的运行资源
