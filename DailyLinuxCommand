@@ -1,14 +1,14 @@
 1.ip	取代ifconfig的命令,功能比ifconfig更加全面
 2.curl aria2c wget	
 3.lspci	可以列出所有的模块
-4.netstat	被ss取代
+4.netstat
 5.ss
 6.nethogs
 7.screen
 8.syslog logger
 9.tee
 10.file
-11.nc
+11.nc socket通信
 12.lsblk
 13.lsppci
 14.more
