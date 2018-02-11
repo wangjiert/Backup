@@ -23,3 +23,4 @@
 	<C-w>:删除前一个单词
 	<C-u>:删至行首
 set ruler 状态行显示列号，行号,以及百分比
+colorscheme 修改vi的调色板
