@@ -26,3 +26,5 @@
 26.free top vmstat
 27.time 查看命令的运行资源
 28.extundelete 找回删除文件
+29.lsof
+30.fuser
