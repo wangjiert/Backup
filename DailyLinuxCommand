@@ -28,3 +28,4 @@
 28.extundelete 找回删除文件
 29.lsof
 30.fuser
+31.fsck

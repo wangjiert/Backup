@@ -1,0 +1,14 @@
+1.DataFile、PageFile区别
+2.DataFile名字db-0.log
+3.DataFile内容：
+	以EOF_RECORD开头表示文件没有记录，EOF_RECORD表示一个字节数组，内容是4个字节的int和一个byte,int是有字符'-' 'q' 'M' 'a'四个字符对应的二进制码拼接而成，int后面的byte是字符'4'对应的二进制编码
+	如果记录的是批处理的数据，则开头BATCH_CONTROL_RECORD_SIZE个字节用来记录批处理的全部信息，包括批处理头以及批处理的数据长度以及数据的checksum
+	BATCH_CONTROL_RECORD_SIZE=RECORD_HEAD_SPACE + BATCH_CONTROL_RECORD_MAGIC.length + 4 + 8 //4表示的批处理数据大小，8表示批处理数据的checksum
+	RECORD_HEAD_SPACE = 4 + 1  //ITEM_HEAD_SPACE = length + type+ reserved space + SOR
+	BATCH_CONTROL_RECORD_MAGIC = bytes("WRITE BATCH")
+	BATCH_CONTROL_RECORD_HEADER : 首先是长度为4个字节的int BATCH_CONTROL_RECORD_SIZE，然后是一个字节的BATCH_CONTROL_RECORD_TYPE，接着是BATCH_CONTROL_RECORD_MAGIC对应的byte数组
+	BATCH_CONTROL_RECORD_TYPE = 2
+	
+	一个批处理的记录信息中，前4+1+魔数字节的长度是信息头，信息头后面是4+8字节的信息长度以及信息的checksum
+	
+4.PageFile中信息都是存两遍
