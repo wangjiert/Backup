@@ -1,0 +1,6 @@
+1.ActiveMQConnectionFactory
+	brokerURL : vm://localhost
+	rc.compoent 有一个localhost
+	rc.param 为空
+
+2.BROKERS SERVERS CONNECTORS之间有什么关系
