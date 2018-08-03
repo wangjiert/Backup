@@ -29,3 +29,7 @@
 29.lsof
 30.fuser
 31.fsck
+32.ldconfig
+33.pkg-config
+34.ldd
+35.yum whatprovides
