@@ -1,0 +1,4 @@
+1.appender和journal共用了inflightWrites
+2.启动的时候首先遍历数据目录 找出所有的db-*.log文件
+	遍历的过程中会把所有的文件放进fileMap中,文件长度的累加值由totalLength记录
+3.写文件时是不是连续写入了两个EOF  批数据的长度是不是不包括头

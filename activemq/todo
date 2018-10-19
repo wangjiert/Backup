@@ -1,0 +1,2 @@
+1.生产者发送消息syncSendPacket(info);
+2.CommandVisitor所有消息处理的核心
